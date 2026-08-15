@@ -1,12 +1,28 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { initialSubjects, weeklyTimetable, defaultTasks, initialSubjectCategories } from '../utils/initialData';
-import { supabase } from '../services/supabase';
+import { useAuth } from './AuthContext';
 
 const AppContext = createContext();
 
 export const useAppContext = () => useContext(AppContext);
 
 export const AppProvider = ({ children }) => {
+  const { token, user, onboardingCompleted, isLoading: authLoading } = useAuth();
+  
+  // Helper for API calls scoped with token
+  const apiFetch = async (endpoint, method = 'GET', body = null) => {
+    const options = { method, headers: {} };
+    if (token) options.headers['Authorization'] = `Bearer ${token}`;
+    if (body) {
+      options.headers['Content-Type'] = 'application/json';
+      options.body = JSON.stringify(body);
+    }
+    const res = await fetch(`/api${endpoint}`, options);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'API Error');
+    return data;
+  };
+
   const [isInitializing, setIsInitializing] = useState(true);
 
   const [subjects, setSubjects] = useState([]);
@@ -28,17 +44,19 @@ export const AppProvider = ({ children }) => {
   const [currentDate, setCurrentDate] = useState(getTodayString());
   const [selectedDate, setSelectedDate] = useState(getTodayString());
 
-  // Fetch initial data from Supabase
+  // Fetch initial data from Express API
   useEffect(() => {
+    if (!token || !onboardingCompleted) return; // Wait until authenticated AND onboarded
+    
     const fetchInitialData = async () => {
       try {
         const [catsRes, subsRes, recordsRes, plansRes, reviewsRes, timetableRes] = await Promise.all([
-          supabase.from('categories').select('*'),
-          supabase.from('subjects').select('*'),
-          supabase.from('daily_records').select('*'),
-          supabase.from('study_plans').select('*'),
-          supabase.from('weekly_reviews').select('*'),
-          supabase.from('weekly_timetable').select('*')
+          apiFetch('/categories'),
+          apiFetch('/subjects'),
+          apiFetch('/daily_records'),
+          apiFetch('/study_plans'),
+          apiFetch('/weekly_reviews'),
+          apiFetch('/weekly_timetable')
         ]);
         
         // Map Categories
@@ -50,18 +68,7 @@ export const AppProvider = ({ children }) => {
             defaultType: c.default_type
           })));
         } else {
-          const localCats = localStorage.getItem('pertracker_categories_v5');
-          const catsToLoad = localCats ? JSON.parse(localCats) : initialSubjectCategories;
-          setSubjectCategories(catsToLoad);
-          
-          catsToLoad.forEach(async (c) => {
-            await supabase.from('categories').insert({
-              id: c.id,
-              title: c.title,
-              category: c.category,
-              default_type: c.defaultType || 'Knowledge'
-            });
-          });
+          setSubjectCategories([]);
         }
 
         // Map Subjects
@@ -75,20 +82,7 @@ export const AppProvider = ({ children }) => {
             currentTopic: s.current_topic
           })));
         } else {
-          const localSubs = localStorage.getItem('pertracker_subjects_v5');
-          const subsToLoad = localSubs ? JSON.parse(localSubs) : initialSubjects;
-          setSubjects(subsToLoad);
-          
-          subsToLoad.forEach(async (s) => {
-            await supabase.from('subjects').insert({
-              id: s.id,
-              name: s.name,
-              type: s.type,
-              category: s.category,
-              progress: s.progress || 0,
-              current_topic: s.currentTopic || ''
-            });
-          });
+          setSubjects([]);
         }
 
         // Map Daily Records
@@ -98,26 +92,13 @@ export const AppProvider = ({ children }) => {
             recordsMap[r.date] = {
               date: r.date,
               dayName: r.day_name,
-              classes: r.classes,
-              tasks: r.tasks
+              classes: Array.isArray(r.classes) ? r.classes : [],
+              tasks: r.tasks || {}
             };
           });
           setDailyRecords(recordsMap);
         } else {
-          const localRecords = localStorage.getItem('pertracker_daily_records_v1');
-          if (localRecords) {
-            const records = JSON.parse(localRecords);
-            setDailyRecords(records);
-            
-            Object.values(records).forEach(async (r) => {
-              await supabase.from('daily_records').upsert({
-                date: r.date,
-                day_name: r.dayName || r.day_name,
-                classes: r.classes || [],
-                tasks: r.tasks || {}
-              });
-            });
-          }
+          setDailyRecords({});
         }
 
         // Map Study Plans
@@ -160,7 +141,7 @@ export const AppProvider = ({ children }) => {
           // Migration from local defaults
           setTimetable(weeklyTimetable);
           Object.entries(weeklyTimetable).forEach(async ([day, classes]) => {
-            await supabase.from('weekly_timetable').insert({
+            await apiFetch('/weekly_timetable', 'POST', {
               day_name: day,
               classes: classes
             });
@@ -168,14 +149,14 @@ export const AppProvider = ({ children }) => {
         }
 
       } catch (err) {
-        console.error("Error fetching data from Supabase:", err);
+        console.error("Error fetching data from API:", err);
       } finally {
         setIsInitializing(false);
       }
     };
 
     fetchInitialData();
-  }, []);
+  }, [token, onboardingCompleted]);
 
   // Helper to generate today's initial tasks based on timetable
   function generateTodayData(dateStr, currentTimetable) {
@@ -183,7 +164,8 @@ export const AppProvider = ({ children }) => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const dayName = days[dateObj.getDay()];
     
-    const todaysClasses = currentTimetable[dayName] || [];
+    const rawClasses = currentTimetable[dayName];
+    const todaysClasses = Array.isArray(rawClasses) ? rawClasses : [];
     
     const todayStr = (() => {
       const d = new Date();
@@ -278,7 +260,7 @@ export const AppProvider = ({ children }) => {
   const todayData = getResolvedDayData(selectedDate, dailyRecords);
 
   const syncDailyRecord = async (dateStr, data) => {
-    await supabase.from('daily_records').upsert({
+    await apiFetch('/daily_records', 'POST', {
       date: dateStr,
       day_name: data.dayName,
       classes: data.classes,
@@ -333,7 +315,7 @@ export const AppProvider = ({ children }) => {
     const subject = { id: `sub_${Date.now()}`, progress: 0, currentTopic: '', ...newSubject };
     setSubjects(prev => [...prev, subject]);
     
-    await supabase.from('subjects').insert({
+    await apiFetch('/subjects', 'POST', {
       id: subject.id,
       name: subject.name,
       type: subject.type,
@@ -346,26 +328,25 @@ export const AppProvider = ({ children }) => {
   const updateSubject = async (id, updates) => {
     setSubjects(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
     
-    // Create DB updates object mapping camelCase back to snake_case
     const dbUpdates = { ...updates };
     if (dbUpdates.currentTopic !== undefined) {
       dbUpdates.current_topic = dbUpdates.currentTopic;
       delete dbUpdates.currentTopic;
     }
     
-    await supabase.from('subjects').update(dbUpdates).eq('id', id);
+    await apiFetch(`/subjects/${id}`, 'PATCH', dbUpdates);
   };
 
   const deleteSubject = async (id) => {
     setSubjects(prev => prev.filter(s => s.id !== id));
-    await supabase.from('subjects').delete().eq('id', id);
+    await apiFetch(`/subjects/${id}`, 'DELETE');
   };
 
   const addSubjectCategory = async (newCategory) => {
     const cat = { id: `cat_${Date.now()}`, ...newCategory };
     setSubjectCategories(prev => [...prev, cat]);
     
-    await supabase.from('categories').insert({
+    await apiFetch('/categories', 'POST', {
       id: cat.id,
       title: cat.title,
       category: cat.category,
@@ -374,8 +355,19 @@ export const AppProvider = ({ children }) => {
   };
 
   const deleteSubjectCategory = async (id) => {
-    setSubjectCategories(prev => prev.filter(c => c.id !== id));
-    await supabase.from('categories').delete().eq('id', id);
+    console.log("DELETING CATEGORY WITH ID:", id);
+    console.log("Current Subject Categories:", subjectCategories);
+    setSubjectCategories(prev => {
+      const filtered = prev.filter(c => c.id !== id);
+      console.log("New Subject Categories after filter:", filtered);
+      return filtered;
+    });
+    try {
+      await apiFetch(`/categories/${id}`, 'DELETE');
+      console.log("API Fetch successful for delete");
+    } catch(e) {
+      console.error("API Fetch failed for delete", e);
+    }
   };
 
   const addStudyPlan = async (subjectId, startDateStr, endDateStr, targetMinutes) => {
@@ -390,7 +382,7 @@ export const AppProvider = ({ children }) => {
 
     setStudyPlans(prev => [...prev, newPlan]);
 
-    await supabase.from('study_plans').insert({
+    await apiFetch('/study_plans', 'POST', {
       id: newPlan.id,
       subject_id: newPlan.subjectId,
       start_date: newPlan.startDate,
@@ -410,12 +402,12 @@ export const AppProvider = ({ children }) => {
     if (updates.targetMinutes !== undefined) dbUpdates.target_minutes = updates.targetMinutes;
     if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
 
-    await supabase.from('study_plans').update(dbUpdates).eq('id', id);
+    await apiFetch(`/study_plans/${id}`, 'PATCH', dbUpdates);
   };
 
   const deleteStudyPlan = async (id) => {
     setStudyPlans(prev => prev.filter(p => p.id !== id));
-    await supabase.from('study_plans').delete().eq('id', id);
+    await apiFetch(`/study_plans/${id}`, 'DELETE');
   };
 
   const saveWeeklyReview = async (weekStartDate, reviewData) => {
@@ -424,7 +416,7 @@ export const AppProvider = ({ children }) => {
       [weekStartDate]: { weekStartDate, ...reviewData }
     }));
     
-    await supabase.from('weekly_reviews').upsert({
+    await apiFetch('/weekly_reviews', 'POST', {
       week_start_date: weekStartDate,
       best_achievement: reviewData.bestAchievement,
       biggest_problem: reviewData.biggestProblem,
@@ -438,7 +430,7 @@ export const AppProvider = ({ children }) => {
       [dayName]: classesArray
     }));
     
-    await supabase.from('weekly_timetable').upsert({
+    await apiFetch('/weekly_timetable', 'POST', {
       day_name: dayName,
       classes: classesArray
     });
@@ -486,12 +478,19 @@ export const AppProvider = ({ children }) => {
     return { target: totalTarget, completed: totalCompleted };
   };
 
-  if (isInitializing) {
+  if (authLoading || (token && onboardingCompleted && isInitializing)) {
     return (
       <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--text-secondary)' }}>
-        Loading data from Supabase...
+        Loading tracker data...
       </div>
     );
+  }
+
+  // Do not render tracker if not authenticated or not onboarded.
+  // The Login page or Onboarding page will render instead from main.jsx/App.jsx.
+  // Wait, we need AppProvider to pass down children so App.jsx can render them!
+  if (!token || !onboardingCompleted) {
+    return <>{children}</>;
   }
 
   return (

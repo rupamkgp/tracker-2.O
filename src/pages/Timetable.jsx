@@ -131,7 +131,7 @@ const Timetable = () => {
   return (
     <div className="animate-fade-in">
       <div className="page-header">
-        <h1 className="page-title">WEEKLY TIMETABLE</h1>
+        <h1 className="page-title">CLASS SCHEDULE</h1>
         <p className="page-subtitle">Manage your college schedule to automatically generate daily academic tasks.</p>
       </div>
 

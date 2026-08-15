@@ -1,25 +1,29 @@
 import React from 'react';
-import { Calendar, BookOpen, Activity, BarChart2, Target, CalendarDays } from 'lucide-react';
+import { Calendar, BookOpen, Activity, BarChart2, Target, CalendarDays, Settings, LogOut } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Sidebar = ({ currentPage, setCurrentPage }) => {
+  const { logout } = useAuth();
+  
   const navItems = [
     { id: 'today', label: 'TODAY', icon: Calendar },
     { id: 'planning', label: 'PLANNING', icon: Activity },
-    { id: 'timetable', label: 'TIMETABLE', icon: CalendarDays },
+    { id: 'timetable', label: 'CLASS SCHEDULE', icon: CalendarDays },
     { id: 'subjects', label: 'SUBJECTS', icon: BookOpen },
     { id: 'weekly', label: 'WEEKLY REVIEW', icon: BarChart2 },
     { id: 'goals', label: 'LONG-TERM GOALS', icon: Target },
+    { id: 'settings', label: 'SETTINGS', icon: Settings },
   ];
 
   return (
-    <div className="sidebar">
+    <div className="sidebar" style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <div style={{ padding: '16px 8px', marginBottom: '32px' }}>
         <h1 style={{ fontSize: '1.2rem', fontWeight: 800, letterSpacing: '1px', background: 'linear-gradient(to right, #6366f1, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
           TASK MANAGING DASHBOARD
         </h1>
       </div>
       
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <nav style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1, overflowY: 'auto' }}>
         {navItems.map(item => {
           const Icon = item.icon;
           const isActive = currentPage === item.id;
@@ -47,8 +51,27 @@ const Sidebar = ({ currentPage, setCurrentPage }) => {
         })}
       </nav>
       
-      <div style={{ marginTop: 'auto', padding: '16px 8px', color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'center' }}>
-        Command Center v1.0
+      <div style={{ marginTop: 'auto', padding: '16px 8px' }}>
+        <button
+          onClick={logout}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            background: 'transparent',
+            color: '#ef4444',
+            fontWeight: 500,
+            textAlign: 'left',
+            border: '1px solid transparent',
+            width: '100%',
+            cursor: 'pointer'
+          }}
+        >
+          <LogOut size={20} />
+          LOG OUT
+        </button>
       </div>
     </div>
   );

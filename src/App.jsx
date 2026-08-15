@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useAuth } from './context/AuthContext';
+import AuthScreen from './components/AuthScreen';
+import Onboarding from './pages/Onboarding';
 import Layout from './components/Layout';
 import Today from './pages/Today';
 import Subjects from './pages/Subjects';
@@ -13,9 +16,15 @@ import CPSyllabus from './pages/CPSyllabus';
 import WebDevSyllabus from './pages/WebDevSyllabus';
 import AIEngineerSyllabus from './pages/AIEngineerSyllabus';
 import QuantTradingSyllabus from './pages/QuantTradingSyllabus';
+import Settings from './pages/Settings';
 
 function App() {
+  const { token, isLoading, onboardingCompleted, setOnboardingCompleted } = useAuth(); console.log('App render: ', {token: !!token, isLoading, onboardingCompleted});
   const [currentPage, setCurrentPage] = useState('today');
+
+  if (isLoading) return <div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>Loading Auth...</div>;
+  if (!token) return <AuthScreen />;
+  if (!onboardingCompleted) return <Onboarding onComplete={() => setOnboardingCompleted(true)} />;
 
   const renderPage = () => {
     switch (currentPage) {
@@ -32,6 +41,7 @@ function App() {
       case 'web-dev-syllabus': return <WebDevSyllabus setCurrentPage={setCurrentPage} />;
       case 'ai-engineer-syllabus': return <AIEngineerSyllabus setCurrentPage={setCurrentPage} />;
       case 'quant-trading-syllabus': return <QuantTradingSyllabus setCurrentPage={setCurrentPage} />;
+      case 'settings': return <Settings />;
       default: return <Today />;
     }
   };
