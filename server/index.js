@@ -6,10 +6,11 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import * as jose from 'jose';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.join(__dirname, '../.env') });
-
+try {
+  dotenv.config();
+} catch (e) {
+  // Ignore dotenv errors on production
+}
 const app = express();
 app.use(cors());
 app.use(express.json());
