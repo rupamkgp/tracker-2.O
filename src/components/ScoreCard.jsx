@@ -48,16 +48,16 @@ const ScoreCard = () => {
           <Target size={18} /> TODAY'S TARGET
         </h2>
         
-        <div style={{ display: 'flex', gap: '48px' }}>
-          <div>
+        <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+          <div style={{ minWidth: '80px' }}>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Study Goal</div>
             <div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{targetHours}h</div>
           </div>
-          <div>
+          <div style={{ minWidth: '80px' }}>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Completed</div>
             <div style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>{completedHours}h</div>
           </div>
-          <div>
+          <div style={{ minWidth: '100px' }}>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Status</div>
             <div style={{ fontSize: '1.2rem', fontWeight: 600, color: statusColor, marginTop: '4px' }}>{statusText}</div>
           </div>
