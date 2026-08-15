@@ -470,8 +470,9 @@ export const AppProvider = ({ children }) => {
 
     Object.values(todayData.tasks).forEach(categoryTasks => {
       categoryTasks.forEach(t => {
-        totalTarget += t.targetMinutes;
-        if (t.completed) totalCompleted += t.targetMinutes;
+        const mins = Number(t.targetMinutes) || 0;
+        totalTarget += mins;
+        if (t.completed) totalCompleted += mins;
       });
     });
 
