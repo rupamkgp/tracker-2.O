@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
         },
         '/auth': {
-          target: env.NEON_AUTH_BASE_URL.replace('/auth', ''), // Target should be the host before /auth so /auth proxies correctly
+          target: (env.NEON_AUTH_BASE_URL || 'http://localhost:3000/auth').replace('/auth', ''), // Target should be the host before /auth so /auth proxies correctly
           changeOrigin: true,
         }
       }
