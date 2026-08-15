@@ -16,6 +16,20 @@ async function setup() {
     // Drop existing tables for a clean slate
     await sql`DROP TABLE IF EXISTS weekly_timetable, weekly_reviews, study_plans, daily_records, subjects, categories, profiles CASCADE;`;
 
+    // Ensure the authenticated role exists and the owner can SET it
+    try {
+      await sql`CREATE ROLE authenticated`;
+      console.log('✅ Created role: authenticated');
+    } catch (e) {
+      console.log('ℹ️  Role authenticated already exists');
+    }
+    
+    try {
+      await sql`GRANT authenticated TO current_user WITH SET TRUE`;
+      console.log('✅ Granted authenticated role to current user (WITH SET TRUE)');
+    } catch (e) {
+      console.log('⚠️  Failed to grant role (might be unsupported on older Postgres versions or lacks permission):', e.message);
+    }
     // 1. Profiles Table
     await sql`
       CREATE TABLE profiles (
