@@ -63,7 +63,12 @@ export const AuthProvider = ({ children }) => {
       body: JSON.stringify({ email, password })
     });
     
-    const data = await res.json();
+    let data = {};
+    try {
+      data = await res.json();
+    } catch (e) {
+      console.warn('Response did not contain valid JSON');
+    }
     if (!res.ok) throw new Error(data.message || 'Login failed');
     
     setToken(data.token); // Save the JWT access token for our backend API
@@ -77,7 +82,12 @@ export const AuthProvider = ({ children }) => {
       body: JSON.stringify({ email, password, name })
     });
     
-    const data = await res.json();
+    let data = {};
+    try {
+      data = await res.json();
+    } catch (e) {
+      console.warn('Response did not contain valid JSON');
+    }
     if (!res.ok) throw new Error(data.message || 'Signup failed');
     
     setToken(data.token); // Save the JWT access token for our backend API

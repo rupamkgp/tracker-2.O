@@ -225,6 +225,40 @@ export const AppProvider = ({ children }) => {
       tasks: { ...baseData.tasks } 
     };
 
+    const todayStr = getTodayString();
+    if (dateStr >= todayStr) {
+      const dateObj = new Date(dateStr);
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const dayName = days[dateObj.getDay()];
+      const currentClasses = Array.isArray(timetable[dayName]) ? timetable[dayName] : [];
+      
+      // Sync classes with the live timetable
+      resolvedData.classes = currentClasses;
+      resolvedData.dayName = dayName;
+
+      // Inject missing Academic tasks from the timetable
+      if (!resolvedData.tasks.Academic) resolvedData.tasks.Academic = [];
+      
+      currentClasses.forEach((cls, index) => {
+        const subject = subjects.find(s => s.name === cls.subject) || initialSubjects.find(s => s.name === cls.subject) || { name: cls.subject, id: null };
+        const isProblemSet = index % 2 !== 0;
+        const expectedTaskName = `${cls.subject} — ${isProblemSet ? 'Problems' : 'Lecture Revision'}`;
+        
+        const exists = resolvedData.tasks.Academic.find(t => t.name === expectedTaskName);
+        if (!exists) {
+          resolvedData.tasks.Academic.push({
+            id: `acad_dyn_${dateStr}_${index}_${Date.now()}`,
+            subjectId: subject.id,
+            name: expectedTaskName,
+            targetMinutes: 45,
+            completed: false,
+            output: '',
+            excludeFromGoal: true
+          });
+        }
+      });
+    }
+
     studyPlans.forEach(plan => {
       if (plan.isActive && dateStr >= plan.startDate && dateStr <= plan.endDate) {
         const subject = subjects.find(s => s.id === plan.subjectId);
