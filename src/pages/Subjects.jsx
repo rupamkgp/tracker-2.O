@@ -27,8 +27,8 @@ const Subjects = () => {
     </div>
   );
 
-  const getTypeColor = (typeStr) => {
-    if (!typeStr) return { bg: 'rgba(255,255,255,0.1)', text: 'var(--text-muted)' };
+  const getSubjectColor = (subjectName) => {
+    if (!subjectName) return { bg: 'rgba(255,255,255,0.1)', text: 'var(--text-muted)' };
     
     const palettes = [
       { bg: 'rgba(99, 102, 241, 0.15)', text: '#818cf8' },  // Indigo
@@ -42,8 +42,9 @@ const Subjects = () => {
     ];
     
     let hash = 0;
-    for (let i = 0; i < typeStr.length; i++) {
-      hash = typeStr.charCodeAt(i) + ((hash << 5) - hash);
+    const cleanName = subjectName.trim().toLowerCase();
+    for (let i = 0; i < cleanName.length; i++) {
+      hash = cleanName.charCodeAt(i) + ((hash << 5) - hash);
     }
     
     const index = Math.abs(hash) % palettes.length;
@@ -150,8 +151,8 @@ const Subjects = () => {
                       padding: '4px 10px', 
                       borderRadius: '12px', 
                       fontSize: '0.8rem', 
-                      background: getTypeColor(sub.type).bg,
-                      color: getTypeColor(sub.type).text
+                      background: getSubjectColor(sub.name).bg,
+                      color: getSubjectColor(sub.name).text
                     }}>
                       {sub.type}
                     </span>
