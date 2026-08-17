@@ -56,11 +56,13 @@ export const AuthProvider = ({ children }) => {
     fetchSession();
   }, [token]);
 
+  const neonCallbackUrl = "https://ep-quiet-shadow-axfnflw6.neonauth.c-4.us-east-2.aws.neon.tech/neondb/auth";
+
   const login = async (email, password) => {
     const res = await fetch(`${authBaseUrl}/sign-in/email`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password, callbackURL: neonCallbackUrl })
     });
     
     let data = {};
@@ -79,7 +81,7 @@ export const AuthProvider = ({ children }) => {
     const res = await fetch(`${authBaseUrl}/sign-up/email`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, name })
+      body: JSON.stringify({ email, password, name, callbackURL: neonCallbackUrl })
     });
     
     let data = {};
@@ -95,7 +97,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    await fetch(`${authBaseUrl}/sign-out`, { method: 'POST' });
+    await fetch(`${authBaseUrl}/sign-out`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ callbackURL: neonCallbackUrl })
+    });
     setToken(null);
     setUser(null);
     localStorage.removeItem('tracker_token');
