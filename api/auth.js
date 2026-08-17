@@ -11,8 +11,8 @@ export default async function handler(req, res) {
       method: req.method,
       headers: {
         ...req.headers,
-        'Host': new URL(targetBaseUrl).host,
-        'Origin': targetBaseUrl
+        'host': new URL(targetBaseUrl).host,
+        'origin': targetBaseUrl
       }
     };
 
