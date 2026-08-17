@@ -21,9 +21,11 @@ export default async function handler(req, res) {
     delete options.headers['x-forwarded-host'];
     delete options.headers['x-forwarded-proto'];
     delete options.headers['connection'];
+    delete options.headers['content-length']; // Let fetch calculate the correct length
+    
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       options.body = typeof req.body === 'object' ? JSON.stringify(req.body) : req.body;
-      options.headers['Content-Type'] = 'application/json';
+      options.headers['content-type'] = 'application/json';
     }
 
     const response = await fetch(targetUrl, options);
