@@ -8,12 +8,11 @@ import CalendarWidget from '../components/CalendarWidget';
 import TaskChecklist from '../components/TaskChecklist';
 
 const Today = () => {
-  const { todayData, selectedDate } = useAppContext();
+  const { todayData, selectedDate, subjectCategories } = useAppContext();
+  const { user } = useAuth();
   
   if (!todayData) return <div>Loading...</div>;
 
-  const { user } = useAuth();
-  
   const todayStr = (() => {
     const d = new Date();
     const year = d.getFullYear();
@@ -43,7 +42,7 @@ const Today = () => {
       </div>
       
       <div style={{ display: 'grid', gap: '24px' }}>
-        {useAppContext().subjectCategories.map((cat, index) => {
+        {subjectCategories.map((cat, index) => {
           // Cycle through icons for custom categories
           const icons = [BookOpen, Code, Book, CheckSquare];
           const icon = icons[index % icons.length];
