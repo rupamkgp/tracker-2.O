@@ -42,11 +42,15 @@ const WeeklyReview = () => {
       }
       
       tasksArray.forEach(task => {
-        totalTargetMinutes += task.targetMinutes || 0;
+        if (!task.excludeFromGoal) {
+          totalTargetMinutes += task.targetMinutes || 0;
+        }
         categoryStats[categoryName].total += 1;
         
         if (task.completed) {
-          totalCompletedMinutes += task.targetMinutes || 0;
+          if (!task.excludeFromGoal) {
+            totalCompletedMinutes += task.targetMinutes || 0;
+          }
           categoryStats[categoryName].completed += 1;
           totalTasksCompleted += 1;
           

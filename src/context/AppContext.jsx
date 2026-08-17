@@ -197,7 +197,8 @@ export const AppProvider = ({ children }) => {
         name: `${cls.subject} — ${isProblemSet ? 'Problems' : 'Lecture Revision'}`,
         targetMinutes: 45,
         completed: false,
-        output: ''
+        output: '',
+        excludeFromGoal: true
       };
     });
 
@@ -470,9 +471,11 @@ export const AppProvider = ({ children }) => {
 
     Object.values(todayData.tasks).forEach(categoryTasks => {
       categoryTasks.forEach(t => {
-        const mins = Number(t.targetMinutes) || 0;
-        totalTarget += mins;
-        if (t.completed) totalCompleted += mins;
+        if (!t.excludeFromGoal) {
+          const mins = Number(t.targetMinutes) || 0;
+          totalTarget += mins;
+          if (t.completed) totalCompleted += mins;
+        }
       });
     });
 
