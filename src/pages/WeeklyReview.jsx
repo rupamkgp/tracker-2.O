@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
+import { formatDuration } from '../utils/format';
 
 const WeeklyReview = () => {
   const { dailyRecords, subjectCategories, subjects, getResolvedDayData, weeklyReviews, saveWeeklyReview } = useAppContext();
@@ -61,8 +62,8 @@ const WeeklyReview = () => {
     });
   });
 
-  const hoursTarget = (totalTargetMinutes / 60).toFixed(1);
-  const hoursCompleted = (totalCompletedMinutes / 60).toFixed(1);
+  const hoursTarget = formatDuration(totalTargetMinutes);
+  const hoursCompleted = formatDuration(totalCompletedMinutes);
 
   let mostActiveSubjectName = 'N/A';
   let maxCompletions = 0;
@@ -110,7 +111,7 @@ const WeeklyReview = () => {
             <h3 style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '16px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>HOURS & PILLARS (Last 7 Days)</h3>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <span>Study hours:</span> <span style={{ fontWeight: 600, color: 'var(--accent-primary)' }}>{hoursCompleted} / {hoursTarget} hrs</span>
+              <span>Study hours:</span> <span style={{ fontWeight: 600, color: 'var(--accent-primary)' }}>{hoursCompleted} / {hoursTarget}</span>
             </div>
             
             {Object.entries(categoryStats).map(([catName, stats]) => {

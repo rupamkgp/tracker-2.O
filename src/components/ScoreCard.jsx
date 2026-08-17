@@ -1,6 +1,7 @@
 import React from 'react';
 import { Target, CheckCircle, Clock } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { formatDuration } from '../utils/format';
 
 const ScoreCard = () => {
   const { calculateScore, calculateHours } = useAppContext();
@@ -8,8 +9,8 @@ const ScoreCard = () => {
   const score = calculateScore();
   const { target, completed } = calculateHours();
   
-  const targetHours = (target / 60).toFixed(1);
-  const completedHours = (completed / 60).toFixed(1);
+  const targetHours = formatDuration(target);
+  const completedHours = formatDuration(completed);
   const progressPercent = Math.min(Math.round((completed / target) * 100), 100) || 0;
 
   // Determine status color and text based on user prompt logic
@@ -51,11 +52,11 @@ const ScoreCard = () => {
         <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
           <div style={{ minWidth: '80px' }}>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Study Goal</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{targetHours}h</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{targetHours}</div>
           </div>
           <div style={{ minWidth: '80px' }}>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Completed</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>{completedHours}h</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>{completedHours}</div>
           </div>
           <div style={{ minWidth: '100px' }}>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Status</div>

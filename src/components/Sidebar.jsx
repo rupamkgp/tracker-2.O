@@ -1,8 +1,8 @@
 import React from 'react';
-import { Calendar, BookOpen, Activity, BarChart2, Target, CalendarDays, Settings, LogOut } from 'lucide-react';
+import { Calendar, BookOpen, Activity, BarChart2, Target, CalendarDays, Settings, LogOut, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const Sidebar = ({ currentPage, setCurrentPage }) => {
+const Sidebar = ({ currentPage, setCurrentPage, setIsSidebarOpen }) => {
   const { logout } = useAuth();
   
   const navItems = [
@@ -17,10 +17,19 @@ const Sidebar = ({ currentPage, setCurrentPage }) => {
 
   return (
     <div className="sidebar" style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <div style={{ padding: '16px 8px', marginBottom: '32px' }}>
-        <h1 style={{ fontSize: '1.2rem', fontWeight: 800, letterSpacing: '1px', background: 'linear-gradient(to right, #6366f1, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+      <div style={{ padding: '16px 8px', marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <h1 style={{ fontSize: '1.2rem', fontWeight: 800, letterSpacing: '1px', background: 'linear-gradient(to right, #6366f1, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>
           TASK MANAGING DASHBOARD
         </h1>
+        {setIsSidebarOpen && (
+          <button 
+            onClick={() => setIsSidebarOpen(false)}
+            style={{ background: 'transparent', color: 'var(--text-secondary)', padding: '4px' }}
+            title="Close Menu"
+          >
+            <X size={20} />
+          </button>
+        )}
       </div>
       
       <nav style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1, overflowY: 'auto' }}>

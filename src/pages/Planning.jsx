@@ -39,7 +39,7 @@ const Planning = () => {
   return (
     <div className="animate-fade-in">
       <div className="page-header">
-        <h1 className="page-title">AUTOMATED PLANNING</h1>
+        <h1 className="page-title">SET YOUR PLAN</h1>
         <p className="page-subtitle">Set a goal and automatically generate daily tasks</p>
       </div>
 

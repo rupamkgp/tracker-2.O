@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle, Circle, Edit3, X, Trash2, Plus } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-
+import { formatDuration } from '../utils/format';
 const TaskChecklist = ({ category, icon: Icon }) => {
   const { todayData, updateTask, addTask, deleteTask, subjects } = useAppContext();
   const tasks = todayData.tasks[category] || [];
@@ -51,7 +51,7 @@ const TaskChecklist = ({ category, icon: Icon }) => {
                 {task.name}
               </div>
               <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                {task.targetMinutes}m
+                {formatDuration(task.targetMinutes)}
               </div>
             </div>
             
