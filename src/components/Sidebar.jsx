@@ -39,7 +39,12 @@ const Sidebar = ({ currentPage, setCurrentPage, setIsSidebarOpen }) => {
           return (
             <button
               key={item.id}
-              onClick={() => setCurrentPage(item.id)}
+              onClick={() => {
+                setCurrentPage(item.id);
+                if (window.innerWidth <= 768 && setIsSidebarOpen) {
+                  setIsSidebarOpen(false);
+                }
+              }}
               style={{
                 display: 'flex',
                 alignItems: 'center',

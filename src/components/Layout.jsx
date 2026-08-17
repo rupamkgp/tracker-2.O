@@ -3,7 +3,7 @@ import Sidebar from './Sidebar';
 import { Menu } from 'lucide-react';
 
 const Layout = ({ children, currentPage, setCurrentPage }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
 
   return (
     <div className="app-container">
