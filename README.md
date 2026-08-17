@@ -1,22 +1,38 @@
-# PerTracker - Personal Academic & Quant Dashboard 🚀
+<div align="center">
 
-A comprehensive, beautifully designed task-managing dashboard built with React and Vite. It is engineered to track daily study goals, manage academic and technical subjects, generate automated study plans, and provide detailed curriculum roadmaps for software engineering and quantitative finance.
+# 📚 StudyTracker
+
+**Personal Academic Tracking Dashboard**<br>
+**Daily Targets, Class Schedules, Automated Plans, and Weekly Reviews**
+
+A beautifully designed task-managing dashboard to optimize your academic workflow.
+
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![React](https://img.shields.io/badge/React-19.0-blue)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-8.0-purple)](https://vitejs.dev/)
+[![Neon](https://img.shields.io/badge/Neon-Serverless_Postgres-00e599)](https://neon.tech/)
+
+</div>
+
+---
+
+This repository hosts **StudyTracker**, a comprehensive dashboard built with React and Vite. It is engineered to track daily study goals, manage academic and technical subjects, generate automated study plans, and provide detailed curriculum roadmaps. We focus on beautiful design (glassmorphism) and robust state management to facilitate a highly productive study routine.
+
+## 📰 News!
+
+- **[08/26]** `v2.0.0` Migrated backend to **Neon Serverless Postgres** and **Express.js**.
+- **[08/26]** Completely redesigned the **Class Timetable** logic to isolate class durations from self-study goals!
+- **[08/26]** Added a sleek, collapsible sidebar to maximize focus and screen real estate on desktop.
+- **[08/26]** Upgraded the **Weekly Review** algorithm to accurately calculate the "Most Active Subject" over a rolling 7-day window.
 
 ## 🌟 Key Features
 
 * **Daily Target Tracking:** Set minute-by-minute study goals and track your completion status (Minimum Day, Good, Excellent) with a dynamic progress bar and visual Daily Score.
 * **Automated Planning:** Select a subject, date range, and daily target, and the app automatically generates scheduled tasks for each day.
 * **Weekly Timetable:** Configure your recurring college classes or commitments. Class durations are accurately isolated from self-study targets.
-* **Weekly Review:** Automatically aggregates your study hours, outputs, and performance metrics over a rolling 7-day window. Keep notes on your biggest achievements and bottlenecks. Automatically identifies your "Most Active Subject".
+* **Weekly Review:** Automatically aggregates your study hours, outputs, and performance metrics over a rolling 7-day window.
 * **Subject Database:** Organize your subjects into custom categories (e.g., Programming, General, Core).
-* **Comprehensive Roadmaps:** Fully documented, interactive syllabuses integrated directly into the platform:
-  * DSA (Data Structures & Algorithms)
-  * CS Fundamentals (OS, DBMS, Networks)
-  * System Design
-  * Competitive Programming
-  * Web Development
-  * AI Engineering
-  * Quant Trading
+* **Comprehensive Roadmaps:** Fully documented, interactive syllabuses integrated directly into the platform (DSA, System Design, Web Dev, etc.).
 
 ## 🛠️ Tech Stack
 
