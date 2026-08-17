@@ -10,22 +10,39 @@ export default async function handler(req, res) {
     const options = {
       method: req.method,
       headers: {
-        'Content-Type': 'application/json',
+        ...req.headers,
+        'Host': new URL(targetBaseUrl).host,
         'Origin': targetBaseUrl
       }
     };
 
+    // Remove headers that shouldn't be proxied blindly
+    delete options.headers['x-forwarded-for'];
+    delete options.headers['x-forwarded-host'];
+    delete options.headers['x-forwarded-proto'];
+    delete options.headers['connection'];
     if (req.method !== 'GET' && req.method !== 'HEAD') {
-      // Vercel parses JSON bodies automatically into req.body
       options.body = typeof req.body === 'object' ? JSON.stringify(req.body) : req.body;
+      options.headers['Content-Type'] = 'application/json';
     }
 
     const response = await fetch(targetUrl, options);
     
-    // Copy all headers from the Neon Auth response to our response
+    // Copy headers carefully
     response.headers.forEach((value, key) => {
-      res.setHeader(key, value);
+      if (key.toLowerCase() !== 'set-cookie') {
+        res.setHeader(key, value);
+      }
     });
+
+    // Handle Set-Cookie array properly to avoid comma-merging bugs
+    const setCookies = response.headers.getSetCookie ? response.headers.getSetCookie() : [];
+    if (setCookies && setCookies.length > 0) {
+      res.setHeader('Set-Cookie', setCookies);
+    } else if (response.headers.has('set-cookie')) {
+      // Fallback for older environments
+      res.setHeader('Set-Cookie', response.headers.get('set-cookie'));
+    }
 
     // If it's a JSON response, send it as JSON
     const contentType = response.headers.get('content-type') || '';
