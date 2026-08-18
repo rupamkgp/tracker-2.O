@@ -56,8 +56,10 @@ const Planning = () => {
               required
             >
               <option value="" disabled>Choose a subject...</option>
-              {subjects.map(s => (
-                <option key={s.id} value={s.id}>{s.name} ({s.category})</option>
+              {subjects
+                .filter(s => subjectCategories.some(cat => cat.category === s.category))
+                .map(s => (
+                  <option key={s.id} value={s.id}>{s.name} ({s.category})</option>
               ))}
             </select>
           </div>

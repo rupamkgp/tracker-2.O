@@ -186,7 +186,13 @@ app.post('/api/categories', async (req, res) => {
 
 app.delete('/api/categories/:id', async (req, res) => {
   try {
-    await queryWithRLS(req.user_id, (tx) => tx`DELETE FROM categories WHERE id = ${req.params.id}`);
+    await queryWithRLS(req.user_id, async (tx) => {
+      const cat = await tx`SELECT category FROM categories WHERE id = ${req.params.id}`;
+      if (cat.length > 0) {
+        await tx`DELETE FROM subjects WHERE category = ${cat[0].category}`;
+      }
+      await tx`DELETE FROM categories WHERE id = ${req.params.id}`;
+    });
     res.json({ success: true });
   } catch (error) { res.status(500).json({ error: error.message }); }
 });

@@ -410,12 +410,14 @@ export const AppProvider = ({ children }) => {
 
   const deleteSubjectCategory = async (id) => {
     console.log("DELETING CATEGORY WITH ID:", id);
-    console.log("Current Subject Categories:", subjectCategories);
-    setSubjectCategories(prev => {
-      const filtered = prev.filter(c => c.id !== id);
-      console.log("New Subject Categories after filter:", filtered);
-      return filtered;
-    });
+    const categoryToDelete = subjectCategories.find(c => c.id === id);
+    
+    setSubjectCategories(prev => prev.filter(c => c.id !== id));
+    
+    if (categoryToDelete) {
+      setSubjects(prev => prev.filter(s => s.category !== categoryToDelete.category));
+    }
+
     try {
       await apiFetch(`/categories/${id}`, 'DELETE');
       console.log("API Fetch successful for delete");
