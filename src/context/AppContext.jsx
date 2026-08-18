@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { initialSubjects, weeklyTimetable, defaultTasks, initialSubjectCategories } from '../utils/initialData';
 import { useAuth } from './AuthContext';
 
@@ -68,7 +68,15 @@ export const AppProvider = ({ children }) => {
             defaultType: c.default_type
           })));
         } else {
-          setSubjectCategories([]);
+          setSubjectCategories(initialSubjectCategories);
+          initialSubjectCategories.forEach(async (cat) => {
+            await apiFetch('/categories', 'POST', {
+              id: cat.id,
+              title: cat.title,
+              category: cat.category,
+              default_type: cat.defaultType
+            }).catch(e => console.error("Failed to seed default category", e));
+          });
         }
 
         // Map Subjects
@@ -222,7 +230,7 @@ export const AppProvider = ({ children }) => {
     // Deep clone to avoid mutating state directly
     const resolvedData = { 
       ...baseData, 
-      tasks: { ...baseData.tasks } 
+      tasks: JSON.parse(JSON.stringify(baseData.tasks || {}))
     };
 
     const todayStr = getTodayString();
@@ -294,13 +302,24 @@ export const AppProvider = ({ children }) => {
 
   const todayData = getResolvedDayData(selectedDate, dailyRecords);
 
-  const syncDailyRecord = async (dateStr, data) => {
-    await apiFetch('/daily_records', 'POST', {
-      date: dateStr,
-      day_name: data.dayName,
-      classes: data.classes,
-      tasks: data.tasks
-    });
+  // Debounced Sync Helper
+  const syncTimers = useRef({});
+  const syncDailyRecord = (dateStr, data) => {
+    if (syncTimers.current[dateStr]) {
+      clearTimeout(syncTimers.current[dateStr]);
+    }
+    syncTimers.current[dateStr] = setTimeout(async () => {
+      try {
+        await apiFetch('/daily_records', 'POST', {
+          date: dateStr,
+          day_name: data.dayName,
+          classes: data.classes,
+          tasks: data.tasks
+        });
+      } catch (e) {
+        console.error("Failed to sync daily record:", e);
+      }
+    }, 500);
   };
 
   const updateTask = (category, taskId, updates) => {
