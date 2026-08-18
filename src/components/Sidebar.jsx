@@ -63,9 +63,7 @@ const Sidebar = ({ currentPage, setCurrentPage, setIsSidebarOpen }) => {
             </button>
           );
         })}
-      </nav>
-      
-      <div style={{ marginTop: 'auto', padding: '16px 8px' }}>
+        
         <button
           onClick={logout}
           style={{
@@ -80,13 +78,14 @@ const Sidebar = ({ currentPage, setCurrentPage, setIsSidebarOpen }) => {
             textAlign: 'left',
             border: '1px solid transparent',
             width: '100%',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            marginTop: '8px'
           }}
         >
           <LogOut size={20} />
           LOG OUT
         </button>
-      </div>
+      </nav>
     </div>
   );
 };
