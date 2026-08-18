@@ -196,6 +196,7 @@ const Subjects = () => {
   };
 
   return (
+    <>
     <div className="animate-fade-in">
       <div className="page-header" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
@@ -267,70 +268,71 @@ const Subjects = () => {
           No subjects found matching "{searchTerm}"
         </div>
       )}
+    </div>
 
-      {/* Custom Confirmation Modal */}
-      {confirmDeleteId && (
+    {/* Custom Confirmation Modal */}
+    {confirmDeleteId && (
+      <div style={{
+        position: 'fixed',
+        top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.75)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9999
+      }}>
         <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.75)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999
+          background: 'var(--bg-secondary)',
+          padding: '24px',
+          borderRadius: '12px',
+          border: '1px solid var(--border-color)',
+          maxWidth: '400px',
+          width: '100%',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.5)'
         }}>
-          <div style={{
-            background: 'var(--bg-secondary)',
-            padding: '24px',
-            borderRadius: '12px',
-            border: '1px solid var(--border-color)',
-            maxWidth: '400px',
-            width: '100%',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.5)'
-          }}>
-            <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>Delete Section?</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
-              Are you sure you want to delete the "{confirmDeleteTitle}" section? This cannot be undone.
-            </p>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-              <button 
-                onClick={() => {
-                  setConfirmDeleteId(null);
-                  setConfirmDeleteTitle('');
-                }}
-                style={{
-                  padding: '8px 16px',
-                  background: 'transparent',
-                  color: 'var(--text-secondary)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '6px',
-                  cursor: 'pointer'
-                }}
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={() => {
-                  deleteSubjectCategory(confirmDeleteId);
-                  setConfirmDeleteId(null);
-                  setConfirmDeleteTitle('');
-                }}
-                style={{
-                  padding: '8px 16px',
-                  background: '#ef4444',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer'
-                }}
-              >
-                Delete
-              </button>
-            </div>
+          <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>Delete Section?</h3>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
+            Are you sure you want to delete the "{confirmDeleteTitle}" section? This cannot be undone.
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+            <button 
+              onClick={() => {
+                setConfirmDeleteId(null);
+                setConfirmDeleteTitle('');
+              }}
+              style={{
+                padding: '8px 16px',
+                background: 'transparent',
+                color: 'var(--text-secondary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+                cursor: 'pointer'
+              }}
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={() => {
+                deleteSubjectCategory(confirmDeleteId);
+                setConfirmDeleteId(null);
+                setConfirmDeleteTitle('');
+              }}
+              style={{
+                padding: '8px 16px',
+                background: '#ef4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer'
+              }}
+            >
+              Delete
+            </button>
           </div>
         </div>
-      )}
-    </div>
+      </div>
+    )}
+    </>
   );
 };
 
