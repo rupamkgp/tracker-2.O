@@ -3,7 +3,7 @@ import { useAppContext } from '../context/AppContext';
 import { Calendar, Trash2, Clock, CheckCircle } from 'lucide-react';
 
 const Planning = () => {
-  const { subjects, studyPlans, addStudyPlan, updateStudyPlan, deleteStudyPlan } = useAppContext();
+  const { subjects, studyPlans, addStudyPlan, updateStudyPlan, deleteStudyPlan, subjectCategories } = useAppContext();
   const getSubjectName = (id) => {
     const s = subjects.find(s => s.id === id);
     return s ? s.name : 'Unknown Subject';
