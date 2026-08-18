@@ -2,6 +2,184 @@ import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Search, ChevronDown, ChevronUp, Plus, Trash2, Edit3, FolderPlus } from 'lucide-react';
 
+const ProgressBar = ({ percent }) => (
+  <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+    <div style={{ 
+      width: `${percent}%`, 
+      height: '100%', 
+      background: 'linear-gradient(90deg, var(--accent-primary), var(--accent-secondary))',
+    }} />
+  </div>
+);
+
+const getSubjectColor = (subjectName) => {
+  if (!subjectName) return { bg: 'rgba(255,255,255,0.1)', text: 'var(--text-muted)' };
+  
+  const palettes = [
+    { bg: 'rgba(99, 102, 241, 0.15)', text: '#818cf8' },  // Indigo
+    { bg: 'rgba(16, 185, 129, 0.15)', text: '#34d399' },  // Emerald
+    { bg: 'rgba(245, 158, 11, 0.15)', text: '#fbbf24' },  // Amber
+    { bg: 'rgba(236, 72, 153, 0.15)', text: '#f472b6' },  // Pink
+    { bg: 'rgba(14, 165, 233, 0.15)', text: '#38bdf8' },  // Sky
+    { bg: 'rgba(139, 92, 246, 0.15)', text: '#a78bfa' },  // Violet
+    { bg: 'rgba(239, 68, 68, 0.15)', text: '#f87171' },   // Red
+    { bg: 'rgba(20, 184, 166, 0.15)', text: '#2dd4bf' },  // Teal
+  ];
+  
+  let hash = 0;
+  const cleanName = subjectName.trim().toLowerCase();
+  for (let i = 0; i < cleanName.length; i++) {
+    hash = cleanName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  const index = Math.abs(hash) % palettes.length;
+  return palettes[index];
+};
+
+const SubjectGroup = ({ id, title, category, defaultType, filteredSubjects, addSubject, deleteSubject, updateSubject, setConfirmDeleteId, setConfirmDeleteTitle }) => {
+  const [isOpen, setIsOpen] = useState(true);
+  const [isAdding, setIsAdding] = useState(false);
+  const [newSubName, setNewSubName] = useState('');
+  const [newSubType, setNewSubType] = useState(defaultType);
+
+  const [editingNameId, setEditingNameId] = useState(null);
+  const [editNameValue, setEditNameValue] = useState('');
+  
+  const groupSubjects = filteredSubjects.filter(s => s.category === category);
+
+  const handleAdd = () => {
+    if (!newSubName.trim()) return;
+    addSubject({ name: newSubName, type: newSubType, category });
+    setNewSubName('');
+    setNewSubType(defaultType);
+    setIsAdding(false);
+  };
+
+  return (
+    <div className="glass-panel" style={{ marginBottom: '24px', overflow: 'hidden' }}>
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        style={{ 
+          padding: '16px 20px', 
+          background: 'rgba(0,0,0,0.2)', 
+          borderBottom: isOpen ? '1px solid var(--border-color)' : 'none',
+          cursor: 'pointer',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          transition: 'background 0.2s'
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
+        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.2)'}
+      >
+        <h3 style={{ fontSize: '1rem', fontWeight: 700, letterSpacing: '1px' }}>{title}</h3>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              setConfirmDeleteTitle(title);
+              setConfirmDeleteId(id);
+            }}
+            style={{ background: 'transparent', color: 'var(--text-muted)' }}
+            title="Delete Section"
+          >
+            <Trash2 size={18} />
+          </button>
+          {isOpen ? <ChevronUp size={20} color="var(--text-muted)" /> : <ChevronDown size={20} color="var(--text-muted)" />}
+        </div>
+      </div>
+      
+      {isOpen && (
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid var(--border-color)', background: 'rgba(0,0,0,0.1)' }}>
+              <th style={{ padding: '16px', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.9rem' }}>Subject</th>
+              <th style={{ padding: '16px', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.9rem' }}>Type</th>
+              <th style={{ padding: '16px', width: '50px' }}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {groupSubjects.length === 0 && !isAdding && (
+               <tr><td colSpan="3" style={{ padding: '16px', textAlign: 'center', color: 'var(--text-muted)' }}>No subjects.</td></tr>
+            )}
+            {groupSubjects.map(sub => (
+              <tr key={sub.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background 0.2s', ':hover': { background: 'rgba(255,255,255,0.02)' } }}>
+                <td style={{ padding: '16px', fontWeight: 500 }}>
+                  {editingNameId === sub.id ? (
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input 
+                        type="text" 
+                        value={editNameValue} 
+                        onChange={e => setEditNameValue(e.target.value)}
+                        style={{ width: '100%', padding: '4px 8px' }}
+                        autoFocus
+                      />
+                      <button onClick={() => {
+                        updateSubject(sub.id, { name: editNameValue });
+                        setEditingNameId(null);
+                      }} style={{ background: 'var(--accent-primary)', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>Save</button>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {sub.name}
+                      <button onClick={() => {
+                        setEditingNameId(sub.id);
+                        setEditNameValue(sub.name);
+                      }} style={{ background: 'transparent', color: 'var(--text-muted)' }}>
+                        <Edit3 size={14} />
+                      </button>
+                    </div>
+                  )}
+                </td>
+                <td style={{ padding: '16px' }}>
+                  <span style={{ 
+                    padding: '4px 10px', 
+                    borderRadius: '12px', 
+                    fontSize: '0.8rem', 
+                    background: getSubjectColor(sub.name).bg,
+                    color: getSubjectColor(sub.name).text
+                  }}>
+                    {sub.type}
+                  </span>
+                </td>
+                <td style={{ padding: '16px' }}>
+                  <button onClick={() => deleteSubject(sub.id)} style={{ background: 'transparent', color: 'var(--status-minimum)', padding: '4px' }}>
+                    <Trash2 size={16} />
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {isAdding && (
+              <tr style={{ background: 'rgba(0,0,0,0.2)' }}>
+                <td style={{ padding: '16px' }}>
+                  <input type="text" placeholder="Subject Name..." value={newSubName} onChange={e => setNewSubName(e.target.value)} style={{ width: '100%' }} autoFocus />
+                </td>
+                <td style={{ padding: '16px' }}>
+                  <input type="text" placeholder="Type (e.g. Core)" value={newSubType} onChange={e => setNewSubType(e.target.value)} style={{ width: '100%' }} />
+                </td>
+                <td style={{ padding: '16px', textAlign: 'right' }}>
+                  <button onClick={() => setIsAdding(false)} style={{ padding: '6px 12px', background: 'transparent', color: 'var(--text-muted)', marginRight: '8px' }}>Cancel</button>
+                  <button onClick={handleAdd} style={{ padding: '6px 12px', background: 'var(--accent-primary)', color: '#fff', borderRadius: '4px' }}>Save</button>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      )}
+      {isOpen && !isAdding && (
+        <button 
+          onClick={() => setIsAdding(true)}
+          style={{ width: '100%', padding: '12px', background: 'transparent', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer' }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+        >
+          <Plus size={16} /> Add Subject
+        </button>
+      )}
+    </div>
+  );
+};
+
 const Subjects = () => {
   const { subjects, subjectCategories, addSubject, deleteSubject, updateSubject, addSubjectCategory, deleteSubjectCategory } = useAppContext();
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,184 +194,6 @@ const Subjects = () => {
     s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     s.type.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const ProgressBar = ({ percent }) => (
-    <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
-      <div style={{ 
-        width: `${percent}%`, 
-        height: '100%', 
-        background: 'linear-gradient(90deg, var(--accent-primary), var(--accent-secondary))',
-      }} />
-    </div>
-  );
-
-  const getSubjectColor = (subjectName) => {
-    if (!subjectName) return { bg: 'rgba(255,255,255,0.1)', text: 'var(--text-muted)' };
-    
-    const palettes = [
-      { bg: 'rgba(99, 102, 241, 0.15)', text: '#818cf8' },  // Indigo
-      { bg: 'rgba(16, 185, 129, 0.15)', text: '#34d399' },  // Emerald
-      { bg: 'rgba(245, 158, 11, 0.15)', text: '#fbbf24' },  // Amber
-      { bg: 'rgba(236, 72, 153, 0.15)', text: '#f472b6' },  // Pink
-      { bg: 'rgba(14, 165, 233, 0.15)', text: '#38bdf8' },  // Sky
-      { bg: 'rgba(139, 92, 246, 0.15)', text: '#a78bfa' },  // Violet
-      { bg: 'rgba(239, 68, 68, 0.15)', text: '#f87171' },   // Red
-      { bg: 'rgba(20, 184, 166, 0.15)', text: '#2dd4bf' },  // Teal
-    ];
-    
-    let hash = 0;
-    const cleanName = subjectName.trim().toLowerCase();
-    for (let i = 0; i < cleanName.length; i++) {
-      hash = cleanName.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    
-    const index = Math.abs(hash) % palettes.length;
-    return palettes[index];
-  };
-
-  const SubjectGroup = ({ id, title, category, defaultType }) => {
-    const [isOpen, setIsOpen] = useState(true);
-    const [isAdding, setIsAdding] = useState(false);
-    const [newSubName, setNewSubName] = useState('');
-    const [newSubType, setNewSubType] = useState(defaultType);
-
-    const [editingNameId, setEditingNameId] = useState(null);
-    const [editNameValue, setEditNameValue] = useState('');
-    
-    const groupSubjects = filteredSubjects.filter(s => s.category === category);
-
-    const handleAdd = () => {
-      if (!newSubName.trim()) return;
-      addSubject({ name: newSubName, type: newSubType, category });
-      setNewSubName('');
-      setNewSubType(defaultType);
-      setIsAdding(false);
-    };
-
-    return (
-      <div className="glass-panel" style={{ marginBottom: '24px', overflow: 'hidden' }}>
-        <div 
-          onClick={() => setIsOpen(!isOpen)}
-          style={{ 
-            padding: '16px 20px', 
-            background: 'rgba(0,0,0,0.2)', 
-            borderBottom: isOpen ? '1px solid var(--border-color)' : 'none',
-            cursor: 'pointer',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            transition: 'background 0.2s'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
-          onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.2)'}
-        >
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, letterSpacing: '1px' }}>{title}</h3>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                setConfirmDeleteTitle(title);
-                setConfirmDeleteId(id);
-              }}
-              style={{ background: 'transparent', color: 'var(--text-muted)' }}
-              title="Delete Section"
-            >
-              <Trash2 size={18} />
-            </button>
-            {isOpen ? <ChevronUp size={20} color="var(--text-muted)" /> : <ChevronDown size={20} color="var(--text-muted)" />}
-          </div>
-        </div>
-        
-        {isOpen && (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border-color)', background: 'rgba(0,0,0,0.1)' }}>
-                <th style={{ padding: '16px', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.9rem' }}>Subject</th>
-                <th style={{ padding: '16px', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.9rem' }}>Type</th>
-                <th style={{ padding: '16px', width: '50px' }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {groupSubjects.length === 0 && !isAdding && (
-                 <tr><td colSpan="3" style={{ padding: '16px', textAlign: 'center', color: 'var(--text-muted)' }}>No subjects.</td></tr>
-              )}
-              {groupSubjects.map(sub => (
-                <tr key={sub.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background 0.2s', ':hover': { background: 'rgba(255,255,255,0.02)' } }}>
-                  <td style={{ padding: '16px', fontWeight: 500 }}>
-                    {editingNameId === sub.id ? (
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <input 
-                          type="text" 
-                          value={editNameValue} 
-                          onChange={e => setEditNameValue(e.target.value)}
-                          style={{ width: '100%', padding: '4px 8px' }}
-                          autoFocus
-                        />
-                        <button onClick={() => {
-                          updateSubject(sub.id, { name: editNameValue });
-                          setEditingNameId(null);
-                        }} style={{ background: 'var(--accent-primary)', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>Save</button>
-                      </div>
-                    ) : (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        {sub.name}
-                        <button onClick={() => {
-                          setEditingNameId(sub.id);
-                          setEditNameValue(sub.name);
-                        }} style={{ background: 'transparent', color: 'var(--text-muted)' }}>
-                          <Edit3 size={14} />
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                  <td style={{ padding: '16px' }}>
-                    <span style={{ 
-                      padding: '4px 10px', 
-                      borderRadius: '12px', 
-                      fontSize: '0.8rem', 
-                      background: getSubjectColor(sub.name).bg,
-                      color: getSubjectColor(sub.name).text
-                    }}>
-                      {sub.type}
-                    </span>
-                  </td>
-                  <td style={{ padding: '16px' }}>
-                    <button onClick={() => deleteSubject(sub.id)} style={{ background: 'transparent', color: 'var(--status-minimum)', padding: '4px' }}>
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {isAdding && (
-                <tr style={{ background: 'rgba(0,0,0,0.2)' }}>
-                  <td style={{ padding: '16px' }}>
-                    <input type="text" placeholder="Subject Name..." value={newSubName} onChange={e => setNewSubName(e.target.value)} style={{ width: '100%' }} autoFocus />
-                  </td>
-                  <td style={{ padding: '16px' }}>
-                    <input type="text" placeholder="Type (e.g. Core)" value={newSubType} onChange={e => setNewSubType(e.target.value)} style={{ width: '100%' }} />
-                  </td>
-                  <td style={{ padding: '16px', textAlign: 'right' }}>
-                    <button onClick={() => setIsAdding(false)} style={{ padding: '6px 12px', background: 'transparent', color: 'var(--text-muted)', marginRight: '8px' }}>Cancel</button>
-                    <button onClick={handleAdd} style={{ padding: '6px 12px', background: 'var(--accent-primary)', color: '#fff', borderRadius: '4px' }}>Save</button>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
-        {isOpen && !isAdding && (
-          <button 
-            onClick={() => setIsAdding(true)}
-            style={{ width: '100%', padding: '12px', background: 'transparent', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
-            <Plus size={16} /> Add Subject
-          </button>
-        )}
-      </div>
-    );
-  };
 
   return (
     <>
@@ -217,7 +217,19 @@ const Subjects = () => {
       </div>
 
       {subjectCategories.map(cat => (
-        <SubjectGroup key={cat.id} id={cat.id} title={cat.title} category={cat.category} defaultType={cat.defaultType} />
+        <SubjectGroup 
+          key={cat.id} 
+          id={cat.id} 
+          title={cat.title} 
+          category={cat.category} 
+          defaultType={cat.defaultType} 
+          filteredSubjects={filteredSubjects}
+          addSubject={addSubject}
+          deleteSubject={deleteSubject}
+          updateSubject={updateSubject}
+          setConfirmDeleteId={setConfirmDeleteId}
+          setConfirmDeleteTitle={setConfirmDeleteTitle}
+        />
       ))}
 
       {isAddingCat ? (
