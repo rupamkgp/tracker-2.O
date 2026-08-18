@@ -33,10 +33,14 @@ const WeeklyReview = () => {
   const categoryStats = {};
   const subjectCompletions = {};
 
+  const activeCategories = [...subjectCategories.map(c => c.category), 'Review'];
+
   past7Dates.forEach(dateStr => {
     const dayData = getResolvedDayData(dateStr, dailyRecords);
     
     Object.entries(dayData.tasks).forEach(([categoryName, tasksArray]) => {
+      if (!activeCategories.includes(categoryName)) return;
+
       if (!categoryStats[categoryName]) {
         categoryStats[categoryName] = { total: 0, completed: 0 };
       }
