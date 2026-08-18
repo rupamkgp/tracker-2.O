@@ -13,13 +13,25 @@ try {
 }
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use((req, res, next) => {
+  // If Vercel already parsed the body, req.body will be defined (and not a stream).
+  // express.json() would otherwise overwrite it with {} because the stream is consumed.
+  if (req.body && typeof req.body === 'object') {
+    return next();
+  }
+  express.json()(req, res, next);
+});
 
 // Auth Middleware: Verify session token and extract user_id
 const requireAuth = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Missing or invalid Authorization header' });
+  }
+
+  if (!process.env.DATABASE_URL) {
+    console.error("CRITICAL: DATABASE_URL is not set!");
+    return res.status(500).json({ error: 'Database configuration missing on server' });
   }
 
   const token = authHeader.split(' ')[1];
@@ -36,7 +48,7 @@ const requireAuth = async (req, res, next) => {
     next();
   } catch (err) {
     console.error("Session Verification failed:", err);
-    return res.status(401).json({ error: 'Invalid token' });
+    return res.status(401).json({ error: 'Invalid token', details: err.message });
   }
 };
 
