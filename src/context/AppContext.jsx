@@ -502,7 +502,10 @@ export const AppProvider = ({ children }) => {
     let totalWeight = 0;
     let earnedScore = 0;
     
-    Object.keys(todayData.tasks).forEach(category => {
+    // Only calculate score for categories that are currently active/visible
+    const activeCategories = [...subjectCategories.map(c => c.category), 'Review'];
+
+    activeCategories.forEach(category => {
       const tasks = todayData.tasks[category] || [];
       if (tasks.length > 0) {
         const weight = baseWeightages[category] || customWeight;
@@ -522,7 +525,11 @@ export const AppProvider = ({ children }) => {
     let totalTarget = 0;
     let totalCompleted = 0;
 
-    Object.values(todayData.tasks).forEach(categoryTasks => {
+    // Only calculate hours for categories that are currently active/visible
+    const activeCategories = [...subjectCategories.map(c => c.category), 'Review'];
+
+    activeCategories.forEach(category => {
+      const categoryTasks = todayData.tasks[category] || [];
       categoryTasks.forEach(t => {
         if (!t.excludeFromGoal) {
           const mins = Number(t.targetMinutes) || 0;
